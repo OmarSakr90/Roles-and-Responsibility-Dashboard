@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Nesaj PMO | Al Fursan 2 – Dark Interactive Dashboard (EN)</title>
+    <!-- Google Fonts + Font Awesome 6 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0B1219;
+            font-family: 'Inter', sans-serif;
+            padding: 1.5rem 1.2rem;
+            color: #EFF3F8;
+            transition: background 0.2s ease;
+        }
+
+        .dashboard-wrapper {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        /* Glassmorphic tabs navigation - interactive */
+        .tabs-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+            margin-bottom: 2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(72, 187, 120, 0.3);
+            background: rgba(18, 25, 35, 0.6);
+            backdrop-filter: blur(4px);
+            border-radius: 60px;
+            padding: 0.5rem;
+        }
+        .tab-btn {
+            background: rgba(30, 41, 59, 0.7);
+            border: none;
+            padding: 0.7rem 1.6rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            color: #B9D0F0;
+            font-family: 'Inter', sans-serif;
+            backdrop-filter: blur(2px);
+            letter-spacing: 0.3px;
+        }
+        .tab-btn i {
+            margin-right: 8px;
+            transition: transform 0.2s;
+        }
+        .tab-btn:hover {
+            background: #2b7a4b;
+            color: white;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 18px rgba(43, 122, 75, 0.3);
+        }
+        .tab-btn:hover i {
+            transform: rotate(5deg) scale(1.1);
+        }
+        .tab-btn.active {
+            background: #2b7a4b;
+            color: white;
+            box-shadow: 0 6px 14px rgba(43, 122, 75, 0.5);
+            border: 1px solid rgba(255,255,240,0.2);
+        }
+        .tab-content {
+            display: none;
+            animation: fadeSlideUp 0.35s ease-out;
+        }
+        .tab-content.active-tab {
+            display: block;
+        }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card styles - dark glassmorphism + hover */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 1.3rem;
+            margin-bottom: 2rem;
+        }
+        .kpi-card {
+            background: rgba(18, 28, 40, 0.8);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            padding: 1.2rem 1rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transition: all 0.25s ease;
+            border: 1px solid rgba(72, 187, 120, 0.2);
+            cursor: pointer;
+        }
+        .kpi-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            background: rgba(28, 40, 54, 0.9);
+            border-color: #2b7a4b;
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.5);
+        }
+        .kpi-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #9ab3d0;
+            letter-spacing: 1px;
+        }
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #C0E0D0;
+            margin: 0.4rem 0 0.2rem;
+            background: linear-gradient(135deg, #E7F0FF, #A3D0B0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.6rem;
+            margin-bottom: 1.8rem;
+        }
+        .card {
+            background: rgba(15, 23, 34, 0.85);
+            backdrop-filter: blur(4px);
+            border-radius: 32px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(46, 125, 80, 0.25);
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-6px);
+            border-color: #2b7a4b;
+            box-shadow: 0 20px 35px -8px rgba(0,0,0,0.5);
+        }
+        .card-header {
+            padding: 1rem 1.4rem;
+            background: rgba(30, 45, 60, 0.6);
+            border-bottom: 1px solid rgba(72, 187, 120, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .card-header i {
+            font-size: 1.5rem;
+            color: #48bb78;
+            filter: drop-shadow(0 0 3px rgba(72,187,120,0.5));
+            transition: transform 0.2s;
+        }
+        .card:hover .card-header i {
+            transform: scale(1.05) rotate(2deg);
+        }
+        .card-header h3 {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #EFF3F8;
+        }
+        .card-body {
+            padding: 1.2rem 1.4rem 1.4rem;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(72, 187, 120, 0.15);
+            padding: 0.75rem 0;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .stat-label {
+            font-weight: 500;
+            color: #B9D0F0;
+        }
+        .stat-number {
+            font-weight: 800;
+            color: #D4F0DF;
+        }
+        .list-styled {
+            list-style: none;
+            padding-left: 0;
+        }
+        .list-styled li {
+            margin-bottom: 0.8rem;
+            display: flex;
+            gap: 12px;
+            align-items: baseline;
+            font-size: 0.85rem;
+            transition: transform 0.15s;
+        }
+        .list-styled li:hover {
+            transform: translateX(6px);
+        }
+        .list-styled li i {
+            width: 24px;
+            color: #48bb78;
+        }
+        .highlight-credit {
+            background: rgba(198, 88, 32, 0.2);
+            border-radius: 24px;
+            padding: 0.9rem;
+            text-align: center;
+            border: 1px solid #E67E22;
+            backdrop-filter: blur(4px);
+        }
+        .credit-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #FDB980;
+        }
+        .badge-credit {
+            background: #c2410c30;
+            color: #FFB347;
+            border-radius: 40px;
+            padding: 0.2rem 0.8rem;
+            font-weight: 700;
+            backdrop-filter: blur(2px);
+        }
+        .footer-note {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #7e98b0;
+            border-top: 1px solid #2c3f33;
+            padding-top: 1.5rem;
+            margin-top: 1rem;
+        }
+        button, .kpi-card, .tab-btn {
+            cursor: pointer;
+        }
+        .tab-btn:active {
+            transform: scale(0.96);
+        }
+        @media (max-width: 700px) {
+            .tab-btn { padding: 0.5rem 1rem; font-size: 0.7rem; }
+        }
+        .chart-container canvas {
+            background: #0f1722;
+            border-radius: 20px;
+            padding: 0.2rem;
+        }
+        ::selection {
+            background: #2b7a4b;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <!-- Interactive Tabs Navigation - ENGLISH -->
+    <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="main"><i class="fas fa-chart-pie"></i> MAIN DASHBOARD</button>
+        <button class="tab-btn" data-tab="phase1"><i class="fas fa-draw-polygon"></i> 1. Initiation & Planning</button>
+        <button class="tab-btn" data-tab="phase2"><i class="fas fa-hard-hat"></i> 2. Execution</button>
+        <button class="tab-btn" data-tab="phase3"><i class="fas fa-clipboard-check"></i> 3. Quality Control</button>
+        <button class="tab-btn" data-tab="phase4"><i class="fas fa-chart-line"></i> 4. Monitoring & Controlling</button>
+        <button class="tab-btn" data-tab="phase5"><i class="fas fa-flag-checkered"></i> 5. Closure</button>
+    </div>
+
+    <!-- ================= MAIN DASHBOARD (CONSOLIDATED) ================= -->
+    <div id="main" class="tab-content active-tab">
+        <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label"><i class="fas fa-file-signature"></i> Official Letters</div><div class="kpi-value">60+</div><div>Enforcements & escalations</div></div>
+            <div class="kpi-card"><div class="kpi-label"><i class="fas fa-clipboard-list"></i> NCR + Quality Obs</div><div class="kpi-value">37+31</div><div>NCRs / Quality reports</div></div>
+            <div class="kpi-card"><div class="kpi-label"><i class="fas fa-chart-line"></i> RFIs Controlled</div><div class="kpi-value">75</div><div>Issued & tracked</div></div>
+            <div class="kpi-card"><div class="kpi-label"><i class="fas fa-check-double"></i> MAR Reviewed</div><div class="kpi-value">160</div><div>Material approvals</div></div>
+            <div class="kpi-card" style="background: linear-gradient(145deg, #1f3329, #0f1a1f);"><div class="kpi-label"><i class="fas fa-sack-dollar"></i> ★ CREDIT VARIATION</div><div class="kpi-value" style="color:#FFB347;">4,000,000 SAR</div><div>Negative VO in progress</div></div>
+        </div>
+        <div class="dashboard-grid">
+            <div class="card"><div class="card-header"><i class="fas fa-draw-polygon"></i><h3>Initiation & Planning</h3></div><div class="card-body"><div class="stat-row"><span>IFC quality upgrade</span><span>IFT → IFC standards</span></div><div class="stat-row"><span>Precast GA drawings</span><span>Fully coordinated by Nesaj</span></div><div class="stat-row"><span>Baseline schedule</span><span>5 months recovery</span></div><div class="stat-row"><span>PMP / Charter</span><span>All artifacts live</span></div></div></div>
+            <div class="card"><div class="card-header"><i class="fas fa-hard-hat"></i><h3>Execution</h3></div><div class="card-body"><div class="stat-row"><span>Progress meetings</span><span>11+ held</span></div><div class="stat-row"><span>Official letters</span><span>60+ enforcements</span></div><div class="stat-row"><span>Contractor PM changes</span><span>4 changes → mitigated</span></div><div class="stat-row"><span>Daily site walks</span><span>Actual vs reported</span></div></div></div>
+            <div class="card"><div class="card-header"><i class="fas fa-clipboard-check"></i><h3>Quality Control</h3></div><div class="card-body"><div class="stat-row"><span>RFIs</span><span>75</span></div><div class="stat-row"><span>NCRs issued</span><span>37</span></div><div class="stat-row"><span>Quality observations</span><span>31 reports</span></div><div class="stat-row"><span>MAR / MIR control</span><span>160+ approvals</span></div></div></div>
+            <div class="card"><div class="card-header"><i class="fas fa-chart-line"></i><h3>Monitoring & Controlling</h3></div><div class="card-body"><div class="stat-row"><span>Cost savings (VOs)</span><span>256,987 SAR</span></div><div class="stat-row"><span>Consultant savings</span><span>100k SAR/month</span></div><div class="highlight-credit" style="margin-top:0.8rem;"><i class="fas fa-crown"></i> <strong>⭐ 4,000,000 SAR Credit Variation</strong><br>Negative VO under preparation</div></div></div>
+            <div class="card"><div class="card-header"><i class="fas fa-handshake"></i><h3>Stakeholder & NHC</h3></div><div class="card-body"><ul class="list-styled"><li><i class="fas fa-building"></i> Weekly/Monthly NHC reports</li><li><i class="fas fa-bolt"></i> SEC & National Water Co.</li><li><i class="fas fa-plug"></i> RETAL connection follow-up</li><li><i class="fas fa-chart-simple"></i> Full handover planning</li></ul></div></div>
+            <div class="card"><div class="card-header"><i class="fas fa-flag-checkered"></i><h3>Closure & Handover</h3></div><div class="card-body"><div class="stat-row"><span>Snagging lists</span><span>Detailed per unit</span></div><div class="stat-row"><span>As-built / O&M</span><span>Under final verification</span></div><div class="stat-row"><span>Contract closure</span><span>VO closeout in progress</span></div></div></div>
+        </div>
+        <div class="footer-note"><i class="fas fa-moon"></i> Dark Mode | Interactive Dashboard | Nesaj PM - Al Fursan 2 Project</div>
+    </div>
+
+    <!-- ========= PHASE 1 : Initiation & Planning ========= -->
+    <div id="phase1" class="tab-content">
+        <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label">Scope review</div><div class="kpi-value">IFC upgrade</div><div>Poor IFT → IFC standards</div></div>
+            <div class="kpi-card"><div class="kpi-label">Precast GA</div><div class="kpi-value">100%</div><div>Coordinated by Nesaj</div></div>
+            <div class="kpi-card"><div class="kpi-label">Baseline schedule</div><div class="kpi-value">5 months</div><div>Recovery & approval</div></div>
+        </div>
+        <div class="dashboard-grid">
+            <div class="card"><div class="card-header"><i class="fas fa-file-contract"></i><h3>Contract & Scope Control</h3></div><div class="card-body"><ul class="list-styled"><li><i class="fas fa-check"></i> Detailed review of BOQ, drawings, discrepancies</li><li><i class="fas fa-check"></i> Formal clarifications & contractor obligations</li><li><i class="fas fa-check"></i> Precast GA drawings for mass production</li><li><i class="fas fa-check"></i> Owner representation: IFC upgrade intensive effort</li></ul></div></div>
+            <div class="card"><div class="card-header"><i class="fas fa-calendar-alt"></i><h3>Baseline Schedule Validation</h3></div><div class="card-body"><div class="stat-row"><span>Contractor submission delay</span><span>14 days → actual 5 months</span></div><div class="stat-row"><span>Daily follow-ups & escalations</span><span>Continuous coordination</span></div><div class="stat-row"><span>Final schedule approved</span><span>Logic, durations validated</span></div></div></div>
+            <div class="card"><div class="card-header"><i class="fas fa-boxes"></i><h3>Procurement & Risk Planning</h3></div><div class="card-body"><div class="stat-row"><span>Procurement plan requested</span><span>Long-lead items identified</span></div><div class="stat-row"><span>Material submittals tracking</span><span>MIR process active</span></div><div class="stat-row"><span>Risk register early</span><span>Procurement delays, design conflicts</span></div></div></div>
+        </div>
+        <div class="card"><div class="card-header"><i class="fas fa-tasks"></i><h3>Project Management Artifacts</h3></div><div class="card-body"><div class="flex-between"><span>Project Charter, PEP, PMP, Communication Plan</span><span class="badge-credit">All maintained</span></div><div class="mt-3" style="margin-top:0.8rem;">Risk register & stakeholder register updated continuously</div></div></div>
+        <div class="footer-note">Phase 1: Initiation & Planning – Foundation for project success</div>
+    </div>
+
+    <!-- ========= PHASE 2 : Execution ========= -->
+    <div id="phase2" class="tab-content">
+        <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label">Daily site walks</div><div class="kpi-value">100%</div><div>Actual vs reported</div></div>
+            <div class="kpi-card"><div class="kpi-label">Progress meetings</div><div class="kpi-value">11+</div><div>Weekly/Daily held</div></div>
+            <div class="kpi-card"><div class="kpi-label">Official letters</div><div class="kpi-value">60+</div><div>Enforcements + emails</div></div>
+        </div>
+        <div class="dashboard-grid">
+            <div class="card"><div class="card-header"><i class="fas fa-hard-hat"></i><h3>Daily Site Control & Verification</h3></div><div class="card-body"><ul class="list-styled"><li><i class="fas fa-walking"></i> Daily walks to verify actual progress vs reported</li><li><i class="fas fa-users"></i> Manpower & equipment productivity checks</li><li><i class="fas fa-chart-simple"></i> Early signs of delay identified</li><li><i class="fas fa-envelope"></i> 60 official letters + multiple escalations</li></ul></div></div>
+            <div class="card"><div class="card-header"><i class="fas fa-gavel"></i><h3>Contractor Performance Enforcement</h3></div><div class="card-body"><div class="stat-row"><span>Weekly/daily progress meetings</span><span>11 meetings to date</span></div><div class="stat-row"><span>Warning letters for non-performance</span><span>60 formal notices</span></div><div class="stat-row"><span>Subcontractor mobilization</span><span>All work fronts enforced</span></div></div></div>
+        </div>
+        <div class="footer-note">Phase 2: Execution – Proactive field control & accountability enforcement</div>
+    </div>
+
+    <!-- ========= PHASE 3 : Quality Control ========= -->
+    <div id="phase3" class="tab-content">
+        <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label">RFIs Issued</div><div class="kpi-value">75</div><div>Controlled by Nesaj</div></div>
+            <div class="kpi-card"><div class="kpi-label">NCRs</div><div class="kpi-value">37</div><div>Closure tracked</div></div>
+            <div class="kpi-card"><div class="kpi-label">MAR / MIR</div><div class="kpi-value">160+</div><div>Material approvals checked</div></div>
+        </div>
+        <div class="dashboard-grid">
+            <div class="card"><div class="card-header"><i class="fas fa-clipboard-list"></i><h3>Inspection & Approval Control</h3></div><div class="card-body"><div class="stat-row"><span>RFIs prior to execution</span><span>75 issued & controlled</span></div><div class="stat-row"><span>NCR issuance for non-compliance</span><span>37 issued</span></div><div class="stat-row"><span>Quality observations reports</span><span>31 issued</span></div><div>Early intervention prevents rework</div></div></div>
+            <div class="card"><div class="card-header"><i class="fas fa-box-open"></i><h3>Material Approval & MIR Control</h3></div><div class="card-body"><ul class="list-styled"><li><i class="fas fa-ban"></i> Materials delivered without MAR → immediate stop</li><li><i class="fas fa-check-circle"></i> 160 MAR checked & approved by Nesaj team</li><li><i class="fas fa-file-signature"></i> MIR before installation enforced</li><li>Full QA/QC compliance</li></ul></div></div>
+        </div>
+        <div class="footer-note">Phase 3: Quality Control – Zero tolerance for non-compliant work</div>
+    </div>
+
+    <!-- ========= PHASE 4 : Monitoring & Controlling ========= -->
+    <div id="phase4" class="tab-content">
+        <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label">Cost savings (VO)</div><div class="kpi-value">~257k SAR</div><div>Plus 4M credit VO</div></div>
+            <div class="kpi-card"><div class="kpi-label">Consultant savings</div><div class="kpi-value">100k/mo</div><div>8 vs 14 personnel</div></div>
+            <div class="kpi-card"><div class="kpi-label">Variation orders</div><div class="kpi-value">3 received</div><div>Value 2.07M SAR</div></div>
+        </div>
+        <div class="dashboard-grid">
+            <div class="card"><div class="card-header"><i class="fas fa-chart-line"></i><h3>Progress & Delay Analysis</h3></div><div class="card-body"><div class="stat-row"><span>Weekly actual vs baseline</span><span>Root causes: procurement, manpower, design</span></div><div class="stat-row"><span>Formal delay notices</span><span>Recovery plans recommended</span></div><div class="chart-container" style="margin-top:10px"><canvas id="monitoringChartDark" style="height:140px; width:100%"></canvas></div></div></div>
+            <div class="card"><div class="card-header"><i class="fas fa-handshake"></i><h3>Stakeholder & Cost Control</h3></div><div class="card-body"><ul class="list-styled"><li><i class="fas fa-building"></i> NHC weekly/monthly reports & meetings</li><li><i class="fas fa-charging-station"></i> SEC & National Water Co. coordination</li><li><i class="fas fa-file-invoice-dollar"></i> Variation orders assessed → 256,987 SAR savings</li><li class="highlight-credit" style="list-style:none; margin-top:8px;"><strong>⭐ CREDIT VARIATION (Negative VO): 4,000,000 SAR</strong> – underway for employer benefit</li></ul></div></div>
+        </div>
+        <div class="card"><div class="card-header"><i class="fas fa-users"></i><h3>Manpower Management & Efficiency</h3></div><div class="card-body"><div class="stat-row"><span>Contractor PM changes</span><span>4 changes but progress secured by Nesaj</span></div><div class="stat-row"><span>Consultant team actual</span><span>8 deployed (contract 14) → 100k SAR/month saved</span></div><div>Risk register, contractual stance, formal correspondence</div></div></div>
+        <div class="footer-note">Phase 4: Monitoring & Controlling – Financial optimization & stakeholder integration</div>
+    </div>
+
+    <!-- ========= PHASE 5 : Closure ========= -->
+    <div id="phase5" class="tab-content">
+        <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label">Snagging lists</div><div class="kpi-value">Detailed</div><div>Per unit tracking</div></div>
+            <div class="kpi-card"><div class="kpi-label">As-built & O&M</div><div class="kpi-value">Final stage</div><div>Documentation completeness</div></div>
+            <div class="kpi-card"><div class="kpi-label">Contract closure</div><div class="kpi-value">In progress</div><div>VO closeout, payments</div></div>
+        </div>
+        <div class="dashboard-grid">
+            <div class="card"><div class="card-header"><i class="fas fa-clipboard-list"></i><h3>Snagging & Closeout Control</h3></div><div class="card-body"><ul class="list-styled"><li><i class="fas fa-check-double"></i> Detailed punch list for all units</li><li><i class="fas fa-tasks"></i> Track closure of all defects</li><li><i class="fas fa-building"></i> Final inspections with stakeholders</li><li><i class="fas fa-times-circle"></i> Reject incomplete handover attempts</li></ul></div></div>
+            <div class="card"><div class="card-header"><i class="fas fa-folder-open"></i><h3>Final Documentation & Financial Closure</h3></div><div class="card-body"><div class="stat-row"><span>As-built drawings, O&M manuals</span><span>Verification ongoing</span></div><div class="stat-row"><span>Variation orders closeout</span><span>Contractor payments finalization</span></div><div class="stat-row"><span>Lessons learned</span><span>Procurement delays, contractor gaps documented</span></div></div></div>
+        </div>
+        <div class="footer-note">Phase 5: Closure – Systematic handover & contractual finalization</div>
+    </div>
+</div>
+
+<script>
+    // Interactive chart for monitoring phase (dark mode)
+    const monitorCanvas = document.getElementById('monitoringChartDark');
+    if(monitorCanvas){
+        new Chart(monitorCanvas, {
+            type: 'line',
+            data: {
+                labels: ['Week1','Week2','Week3','Week4','Week5','Week6'],
+                datasets: [
+                    { label:'Planned (%)', data:[8,20,34,48,60,70], borderColor:'#7f8c8d', borderDash:[6,6], tension:0.2 },
+                    { label:'Actual (Nesaj Recovery)', data:[6,18,32,47,59,68.5], borderColor:'#2b7a4b', backgroundColor:'rgba(43,122,75,0.1)', fill:true, tension:0.2 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color:'#cbd5e1', font:{size:9} } } }, scales: { y: { grid: { color:'#2c3f44' }, ticks:{color:'#ccc'}}, x:{ ticks:{color:'#ccc'}} } }
+        });
+    }
+    // tab switching with interactive feedback
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+    tabs.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.getAttribute('data-tab');
+            contents.forEach(content => content.classList.remove('active-tab'));
+            tabs.forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active-tab');
+            btn.classList.add('active');
+        });
+    });
+</script>
+</body>
+</html>
